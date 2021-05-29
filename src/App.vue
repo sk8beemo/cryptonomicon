@@ -414,6 +414,7 @@ export default {
 
     select(ticker) {
       this.selectedTicker = ticker;
+      this.$nextTick().then(this.calculateMaxGraphElements());
     },
 
     handleDelete(tickerToRemove) {
