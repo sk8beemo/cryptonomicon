@@ -35,7 +35,6 @@
         <add-button @click="add()" />
       </div>
     </div>
-    <plus-sign-icon />
   </section>
 </template>
 <script>
