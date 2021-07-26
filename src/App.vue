@@ -1,86 +1,14 @@
 <template>
   <div class="container mx-auto flex flex-col items-center bg-gray-100 p-4">
-    <div
-      class="fixed w-100 h-100 opacity-80 bg-purple-800 inset-0 z-50 flex items-center justify-center"
-      v-if="loading"
-    >
-      <svg
-        class="animate-spin -ml-1 mr-3 h-12 w-12 text-white"
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-      >
-        <circle
-          class="opacity-25"
-          cx="12"
-          cy="12"
-          r="10"
-          stroke="currentColor"
-          stroke-width="4"
-        ></circle>
-        <path
-          class="opacity-75"
-          fill="currentColor"
-          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-        ></path>
-      </svg>
-    </div>
+    <app-spinner v-if="loading" />
     <div class="container">
       <section>
-        <div class="flex">
-          <div class="max-w-xs">
-            <label for="wallet" class="block text-sm font-medium text-gray-700"
-              >Тикер</label
-            >
-            <div class="mt-1 relative rounded-md shadow-md">
-              <input
-                v-model="ticker"
-                @keyup="tickerKeyHandler"
-                type="text"
-                name="wallet"
-                id="wallet"
-                class="block w-full pr-10 border-gray-300 text-gray-900 focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm rounded-md"
-                placeholder="Например DOGE"
-              />
-            </div>
-            <div
-              class="flex bg-white shadow-md p-1 rounded-md flex-wrap"
-              v-if="tokenList.length !== 0"
-            >
-              <span
-                v-for="c in tokenList"
-                :key="c"
-                @click="add(c)"
-                class="inline-flex items-center px-2 m-1 rounded-md text-xs font-medium bg-gray-300 text-gray-800 cursor-pointer"
-              >
-                {{ c }}
-              </span>
-            </div>
-            <div v-if="isUsage" class="text-sm text-red-600">
-              Такой тикер уже добавлен
-            </div>
-          </div>
-        </div>
-        <button
-          @click="add"
-          type="button"
-          class="my-4 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-        >
-          <!-- Heroicon name: solid/mail -->
-          <svg
-            class="-ml-0.5 mr-2 h-6 w-6"
-            xmlns="http://www.w3.org/2000/svg"
-            width="30"
-            height="30"
-            viewBox="0 0 24 24"
-            fill="#ffffff"
-          >
-            <path
-              d="M13 7h-2v4H7v2h4v4h2v-4h4v-2h-4V7zm-1-5C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"
-            ></path>
-          </svg>
-          Добавить
-        </button>
+        <add-ticker
+          :token-list="tokenList"
+          :isUsage="isUsage"
+          @add-ticker="add"
+          @find-tokens="tokenListHandler"
+        />
       </section>
 
       <template v-if="tickers.length">
@@ -208,21 +136,27 @@
 // [x] При удалении тикера остается выбор
 
 import { subscribeToTicker, unsubscribeFromTicker } from "./api";
+import AddTicker from "./components/AddTicker.vue";
+import AppSpinner from "./components/AppSpinner.vue";
 
 let coins;
 export default {
   name: "App",
 
+  components: {
+    AddTicker,
+    AppSpinner
+  },
+
   data() {
     return {
       loading: false,
+      isUsage: false,
 
-      ticker: "",
       filter: "",
       tickers: [],
       selectedTicker: null,
       tokenList: [],
-      isUsage: false,
       graph: [],
       maxGraphElements: 1,
       page: 1
@@ -352,15 +286,12 @@ export default {
       return price > 1 ? price.toFixed(2) : price.toPrecision(2);
     },
 
-    add(name = null) {
-      if (name) {
-        this.ticker = name;
-      }
-
+    add(name) {
       const currentTicker = {
-        name: name || this.ticker,
+        name: name,
         price: "-"
       };
+      this.tokenList = [];
 
       if (this.checkUsage(currentTicker)) {
         return;
@@ -371,32 +302,15 @@ export default {
       subscribeToTicker(currentTicker.name, price =>
         this.updateTicker(currentTicker.name, price)
       );
-      this.ticker = "";
-      this.tokenList = [];
       this.filter = "";
     },
 
-    tickerKeyHandler() {
-      if (event.key === "Enter") {
-        this.add();
-      } else {
-        if (this.ticker.length !== 0) {
-          this.findTokens(this.ticker);
-        } else {
-          this.tokenList = [];
-        }
-        if (this.isUsage) {
-          this.isUsage = false;
-        }
-      }
-    },
-
     checkUsage(ticker) {
-      if (
-        this.tickers.filter(
-          item => item.name.toLowerCase() === ticker.name.toLowerCase()
-        ).length !== 0
-      ) {
+      const existTicker = this.tickers.find(
+        item => item.name.toLowerCase() === ticker.name.toLowerCase()
+      );
+
+      if (existTicker) {
         this.isUsage = true;
         return true;
       } else {
@@ -405,11 +319,16 @@ export default {
       }
     },
 
-    findTokens(value) {
-      const coinsFiltered = coins
+    tokenListHandler(value) {
+      if (!value) {
+        this.tokenList = [];
+        return;
+      }
+
+      this.tokenList = coins
         .filter(item => item["FullName"].indexOf(value.toLowerCase()) !== -1)
-        .map(item => item["Symbol"]);
-      this.tokenList = coinsFiltered.splice(0, 4);
+        .map(item => item["Symbol"])
+        .splice(0, 4);
     },
 
     select(ticker) {
