@@ -7,7 +7,7 @@
           :tokenList="tokenList"
           :isUsage="isUsage"
           @add-ticker="add"
-          @find-tokens="tokenListHandler"
+          @find-tokens="tokenAutocomplete"
         />
       </section>
 
@@ -217,15 +217,18 @@ export default {
       }
     },
 
-    tokenListHandler(value) {
+    tokenAutocomplete(value) {
       if (!value) {
         this.tokenList = [];
         return;
       }
 
       this.tokenList = coins
-        .filter(item => item["FullName"].indexOf(value.toLowerCase()) !== -1)
+        .filter(item =>
+          item["FullName"].toLowerCase().includes(value.toLowerCase())
+        )
         .map(item => item["Symbol"])
+        .sort((a, b) => a.length - b.length)
         .splice(0, 4);
     },
 
