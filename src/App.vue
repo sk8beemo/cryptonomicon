@@ -43,7 +43,7 @@
         v-if="selectedTicker"
         :selectedTicker="selectedTicker"
         :graph="graph"
-        @shift="graph.shift()"
+        @sliceGraph="removeLegacyGraph(graphNumber)"
         @close="selectedTicker = null"
       />
     </div>
@@ -242,6 +242,10 @@ export default {
         this.selectedTicker = null;
       }
       unsubscribeFromTicker(tickerToRemove.name);
+    },
+
+    removeLegacyGraph(number) {
+      this.graph = this.graph.slice(0, number);
     }
   },
 

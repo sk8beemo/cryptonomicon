@@ -50,21 +50,20 @@ export default {
     selectedTicker: Object,
     graph: Object
   },
-  emits: ["close", "shift"],
+  emits: ["close", "sliceGraph"],
 
   data() {
     return { maxGraphElements: 1 };
   },
 
   mounted: function() {
-    console.log("mount");
     window.addEventListener("resize", this.calculateMaxGraphElements);
   },
 
   beforeUpdate: function() {
     this.$nextTick().then(this.calculateMaxGraphElements());
     if (this.graph.length > this.maxGraphElements) {
-      this.$emit("shift");
+      this.$emit("sliceGraph", 1);
     }
   },
 
@@ -78,6 +77,12 @@ export default {
         return;
       }
       this.maxGraphElements = this.$refs.graph.clientWidth / 38;
+      if (this.graph.length > this.maxGraphElements) {
+        this.$emit(
+          "sliceGraph",
+          parseInt(this.graph.length - this.maxGraphElements)
+        );
+      }
     }
   },
 
