@@ -66,7 +66,11 @@
 // [x] График сломан если везде одинаковые значения
 // [x] При удалении тикера остается выбор
 
-import { subscribeToTicker, unsubscribeFromTicker } from "./api";
+import {
+  subscribeToTicker,
+  unsubscribeFromTicker,
+  getCoins
+} from "./services/api";
 import AddTicker from "./components/AddTicker.vue";
 import AppSpinner from "./components/AppSpinner.vue";
 import NavigateButton from "./components/NavigateButton.vue";
@@ -132,18 +136,11 @@ export default {
 
   mounted: async function() {
     this.loading = true;
-    await fetch(
-      "https://min-api.cryptocompare.com/data/all/coinlist?summary=true"
-    )
-      .then(response => response.json())
-      .then(
-        data =>
-          (coins = Object.values(data.Data).map(function(a) {
-            a.FullName = a.FullName.toLowerCase();
-            return a;
-          }))
-      );
-    this.loading = false;
+    getCoins()
+      .then(data => {
+        coins = Object.values(data);
+      })
+      .finally(() => (this.loading = false));
   },
 
   computed: {
