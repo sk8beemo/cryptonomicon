@@ -16,6 +16,7 @@ const BTC = "BTC";
 
 let btcCourse;
 
+/** FIXME добавить обработчики для ошибочных сообщений */
 socket.addEventListener("message", e => {
   const {
     TYPE: type,
