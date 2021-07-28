@@ -1,3 +1,4 @@
+/** FIXME убрать в переменную окружения */
 const API_KEY =
   "1a8a21127c2da5beaf3d8ac1178a69cec5bd024882ec1446c31022c67ea39456";
 
@@ -6,6 +7,7 @@ const socket = new WebSocket(
   `wss://streamer.cryptocompare.com/v2?api_key=${API_KEY}`
 );
 
+/** FIXME убрать константы в отдельный файл */
 const INVALID_TYPE = "500";
 const INVALID_SUB = "INVALID_SUB";
 const AGGREGATE_INDEX = "5";
@@ -61,6 +63,7 @@ function sendToWebSocket(message) {
   });
 }
 
+/** FIXME добавить типы экшенов и параметры для сабов */
 function subscribeToTickerOnWs(ticker, currency) {
   sendToWebSocket({
     action: "SubAdd",
@@ -68,6 +71,7 @@ function subscribeToTickerOnWs(ticker, currency) {
   });
 }
 
+/** FIXME добавить типы экшенов и параметры для сабов */
 function unsubscribeFromTickerOnWs(ticker, currency) {
   sendToWebSocket({
     action: "SubRemove",
