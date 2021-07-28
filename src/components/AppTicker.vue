@@ -45,8 +45,8 @@ export default {
   emits: ["selectTicker", "deleteTicker"],
   methods: {
     formatPrice(price) {
-      if (price === "-") {
-        return price;
+      if (!price) {
+        return "-";
       }
       return price > 1 ? price.toFixed(2) : price.toPrecision(2);
     }

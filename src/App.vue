@@ -52,8 +52,8 @@
 
 <script>
 // [x] 6. Наличие в состоянии ЗАВИСИМЫХ ДАННЫХ | Критичность: 5+
-// [ ] 4. Запросы напрямую внутри компонента (???) | Критичность: 5
-// [ ] 2. При удалении остается подписка на загрузку тикера | Критичность: 5
+// [x] 4. Запросы напрямую внутри компонента (???) | Критичность: 5
+// [x] 2. При удалении остается подписка на загрузку тикера | Критичность: 5
 // [ ] 5. Обработка ошибок API | Критичность: 5
 // [x] 3. Количество запросов | Критичность: 4
 // [x] 8. При удалении тикера не изменяется localStorage | Критичность: 4
@@ -69,7 +69,9 @@
 import {
   subscribeToTicker,
   unsubscribeFromTicker,
-  getCoins
+  getCoins,
+  initBtcToUsd,
+  destroyBtcToUsd
 } from "./services/api";
 import AddTicker from "./components/AddTicker.vue";
 import AppSpinner from "./components/AppSpinner.vue";
@@ -132,6 +134,8 @@ export default {
         subscribeToTicker(t.name, price => this.updateTicker(t.name, price));
       });
     }
+
+    initBtcToUsd();
   },
 
   mounted: async function() {
@@ -187,7 +191,7 @@ export default {
     add(name) {
       const currentTicker = {
         name: name,
-        price: "-"
+        price: null
       };
       this.tokenList = [];
 
@@ -277,6 +281,10 @@ export default {
         `${window.location.pathname}?filter=${value.filter}&page=${value.page}`
       );
     }
+  },
+
+  beforeUnmount: function() {
+    destroyBtcToUsd();
   }
 };
 </script>
